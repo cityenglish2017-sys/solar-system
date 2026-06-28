@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Owen Space Mission</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -9,20 +10,28 @@
   <div id="game">
     <header>
       <h1>🚀 Owen Space Mission</h1>
-      <div id="stars">⭐ <span id="score">0</span></div>
+      <div id="topStats">
+        <div>⭐ Stars: <span id="score">0</span></div>
+        <div>🚀 Rocket: <span id="rocketLevel">Basic</span></div>
+      </div>
     </header>
 
     <main id="screen">
       <section id="spaceView">
+        <div id="starsLayer"></div>
         <div id="sun"></div>
-        <div id="rocket">🚀</div>
+        <div id="rocket">
+          <div id="rocketBody">🚀</div>
+          <div id="flame"></div>
+        </div>
         <div id="planetDisplay"></div>
         <div id="obstacle"></div>
+        <div id="countdown"></div>
       </section>
 
       <section id="controlPanel">
         <h2 id="missionTitle">행성을 선택하세요</h2>
-        <p id="message">원하는 행성을 누르고 연료를 계산해 로켓을 발사하세요!</p>
+        <p id="message">행성을 선택하고 연료 계산을 맞춘 뒤 로켓을 발사하세요!</p>
 
         <div id="planetButtons"></div>
 
@@ -30,10 +39,12 @@
           <div id="fuelTarget">필요 연료: 0 L</div>
           <div id="selectedFormula">선택: ? + ? = ?</div>
           <div id="numberCards"></div>
+
           <div class="opButtons">
             <button id="plusBtn">➕ 더하기</button>
             <button id="minusBtn">➖ 빼기</button>
           </div>
+
           <button id="launchBtn">🚀 LAUNCH</button>
         </div>
 
@@ -41,6 +52,16 @@
           <h3 id="quizTitle">우주 장애물!</h3>
           <div id="quizQuestion">?</div>
           <div id="quizAnswers"></div>
+        </div>
+
+        <div id="stickerBook">
+          <h3>🌌 Planet Sticker Book</h3>
+          <div id="stickers"></div>
+        </div>
+
+        <div id="planetFact" class="hidden">
+          <h3 id="factTitle"></h3>
+          <p id="factText"></p>
         </div>
       </section>
     </main>
