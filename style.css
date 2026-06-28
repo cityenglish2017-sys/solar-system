@@ -1,0 +1,323 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #050816;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+#game {
+  width: 100vw;
+  height: 100vh;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+header {
+  height: 70px;
+  background: #111c44;
+  border: 4px solid #ffffff;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 36px;
+  color: #ffd54f;
+}
+
+#stars {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+#screen {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 58% 42%;
+  gap: 10px;
+}
+
+#spaceView {
+  position: relative;
+  overflow: hidden;
+  border: 4px solid white;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.9) 1px, transparent 2px),
+    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.7) 1px, transparent 2px),
+    radial-gradient(circle at 50% 70%, rgba(255,255,255,0.7) 1px, transparent 2px),
+    linear-gradient(#08112f, #02040d);
+  background-size: 90px 90px, 130px 130px, 160px 160px, 100% 100%;
+}
+
+#sun {
+  position: absolute;
+  left: 35px;
+  top: 35px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff176, #ff9800, #f4511e);
+  box-shadow: 0 0 40px #ffeb3b;
+}
+
+#rocket {
+  position: absolute;
+  left: 80px;
+  bottom: 55px;
+  font-size: 80px;
+  transform: rotate(45deg);
+  transition: 1s;
+  z-index: 5;
+}
+
+.launching {
+  animation: fly 3s forwards;
+}
+
+@keyframes fly {
+  0% { left: 80px; bottom: 55px; transform: rotate(45deg) scale(1); }
+  50% { left: 45%; bottom: 45%; transform: rotate(45deg) scale(1.2); }
+  100% { left: 72%; bottom: 65%; transform: rotate(45deg) scale(0.9); }
+}
+
+#planetDisplay {
+  position: absolute;
+  right: 80px;
+  top: 110px;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  display: none;
+}
+
+.planet {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: inset -25px -20px 25px rgba(0,0,0,0.35), 0 0 25px rgba(255,255,255,0.3);
+}
+
+.mercury {
+  background: radial-gradient(circle at 35% 35%, #bdbdbd, #757575);
+}
+
+.venus {
+  background: linear-gradient(135deg, #fff59d, #ffb74d, #f57c00);
+}
+
+.earth {
+  background:
+    radial-gradient(circle at 35% 35%, #4fc3f7 0 25%, transparent 26%),
+    radial-gradient(circle at 65% 60%, #66bb6a 0 18%, transparent 19%),
+    linear-gradient(#1976d2, #64b5f6);
+}
+
+.mars {
+  background: radial-gradient(circle at 40% 40%, #ff8a65, #d84315, #7f1d1d);
+}
+
+.jupiter {
+  background: repeating-linear-gradient(
+    0deg,
+    #f5c16c 0 22px,
+    #a85f2c 22px 38px,
+    #fff3c4 38px 56px
+  );
+}
+
+.saturn {
+  background: linear-gradient(#f6d365, #d6a545);
+  position: relative;
+}
+
+.saturn::before {
+  content: "";
+  position: absolute;
+  width: 270px;
+  height: 70px;
+  border: 16px solid rgba(230, 210, 150, 0.9);
+  border-radius: 50%;
+  left: -40px;
+  top: 60px;
+  transform: rotate(-18deg);
+}
+
+.uranus {
+  background: linear-gradient(135deg, #b2ebf2, #4dd0e1, #26a6b8);
+}
+
+.neptune {
+  background: linear-gradient(135deg, #4fc3f7, #1565c0, #0d47a1);
+}
+
+#obstacle {
+  position: absolute;
+  font-size: 95px;
+  left: 45%;
+  top: 45%;
+  display: none;
+  animation: shake 0.35s infinite alternate;
+}
+
+@keyframes shake {
+  from { transform: rotate(-5deg) scale(1); }
+  to { transform: rotate(5deg) scale(1.1); }
+}
+
+#controlPanel {
+  border: 4px solid white;
+  border-radius: 24px;
+  background: #13204d;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#missionTitle {
+  margin: 0;
+  font-size: 30px;
+  color: #ffd54f;
+}
+
+#message {
+  background: white;
+  color: #111;
+  min-height: 62px;
+  border-radius: 16px;
+  padding: 12px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+#planetButtons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+#planetButtons button {
+  height: 82px;
+  font-size: 20px;
+  border-radius: 18px;
+  border: none;
+  font-weight: bold;
+  background: #e3f2fd;
+}
+
+#fuelGame {
+  background: #07112d;
+  border: 3px solid #ffd54f;
+  border-radius: 18px;
+  padding: 12px;
+}
+
+#fuelTarget,
+#selectedFormula {
+  font-size: 25px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#numberCards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.numberCard {
+  height: 72px;
+  font-size: 28px;
+  border-radius: 16px;
+  background: #fff176;
+  border: none;
+  font-weight: bold;
+}
+
+.numberCard.selected {
+  background: #69f0ae;
+  transform: scale(1.05);
+}
+
+.opButtons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.opButtons button,
+#launchBtn {
+  flex: 1;
+  height: 62px;
+  font-size: 24px;
+  border-radius: 16px;
+  border: none;
+  font-weight: bold;
+  background: #ffca28;
+}
+
+#launchBtn {
+  width: 100%;
+  margin-top: 10px;
+  background: #ff5252;
+  color: white;
+}
+
+#spaceQuiz {
+  background: #000;
+  border: 3px solid #29b6f6;
+  border-radius: 18px;
+  padding: 14px;
+}
+
+#quizTitle {
+  margin: 0 0 10px;
+  font-size: 26px;
+  color: #29b6f6;
+}
+
+#quizQuestion {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+#quizAnswers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+#quizAnswers button {
+  height: 70px;
+  font-size: 28px;
+  border-radius: 16px;
+  border: none;
+  background: #b3e5fc;
+  font-weight: bold;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.hidden {
+  display: none;
+}

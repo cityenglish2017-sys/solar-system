@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Owen Space Mission</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game">
+    <header>
+      <h1>🚀 Owen Space Mission</h1>
+      <div id="stars">⭐ <span id="score">0</span></div>
+    </header>
+
+    <main id="screen">
+      <section id="spaceView">
+        <div id="sun"></div>
+        <div id="rocket">🚀</div>
+        <div id="planetDisplay"></div>
+        <div id="obstacle"></div>
+      </section>
+
+      <section id="controlPanel">
+        <h2 id="missionTitle">행성을 선택하세요</h2>
+        <p id="message">원하는 행성을 누르고 연료를 계산해 로켓을 발사하세요!</p>
+
+        <div id="planetButtons"></div>
+
+        <div id="fuelGame" class="hidden">
+          <div id="fuelTarget">필요 연료: 0 L</div>
+          <div id="selectedFormula">선택: ? + ? = ?</div>
+          <div id="numberCards"></div>
+          <div class="opButtons">
+            <button id="plusBtn">➕ 더하기</button>
+            <button id="minusBtn">➖ 빼기</button>
+          </div>
+          <button id="launchBtn">🚀 LAUNCH</button>
+        </div>
+
+        <div id="spaceQuiz" class="hidden">
+          <h3 id="quizTitle">우주 장애물!</h3>
+          <div id="quizQuestion">?</div>
+          <div id="quizAnswers"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
