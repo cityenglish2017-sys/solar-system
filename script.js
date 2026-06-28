@@ -9,6 +9,7 @@ const launchBtn = document.getElementById("launchBtn");
 const plusBtn = document.getElementById("plusBtn");
 const minusBtn = document.getElementById("minusBtn");
 const rocket = document.getElementById("rocket");
+const rocketBody = document.getElementById("rocketBody");
 const planetDisplay = document.getElementById("planetDisplay");
 const obstacle = document.getElementById("obstacle");
 const spaceQuiz = document.getElementById("spaceQuiz");
@@ -16,22 +17,29 @@ const quizTitle = document.getElementById("quizTitle");
 const quizQuestion = document.getElementById("quizQuestion");
 const quizAnswers = document.getElementById("quizAnswers");
 const scoreSpan = document.getElementById("score");
+const rocketLevel = document.getElementById("rocketLevel");
+const countdown = document.getElementById("countdown");
+const stickers = document.getElementById("stickers");
+const planetFact = document.getElementById("planetFact");
+const factTitle = document.getElementById("factTitle");
+const factText = document.getElementById("factText");
 
 let selectedPlanet = null;
 let selectedNumbers = [];
 let operator = "+";
-let score = 0;
+let score = Number(localStorage.getItem("owenStars") || 0);
+let visited = JSON.parse(localStorage.getItem("owenVisitedPlanets") || "[]");
 let travelStep = 0;
 
 const planets = [
-  { name: "Mercury", ko: "수성", fuel: 80, className: "mercury" },
-  { name: "Venus", ko: "금성", fuel: 100, className: "venus" },
-  { name: "Earth", ko: "지구", fuel: 120, className: "earth" },
-  { name: "Mars", ko: "화성", fuel: 150, className: "mars" },
-  { name: "Jupiter", ko: "목성", fuel: 180, className: "jupiter" },
-  { name: "Saturn", ko: "토성", fuel: 190, className: "saturn" },
-  { name: "Uranus", ko: "천왕성", fuel: 200, className: "uranus" },
-  { name: "Neptune", ko: "해왕성", fuel: 220, className: "neptune" }
+  { name: "Mercury", ko: "수성", fuel: 80, className: "mercury", fact: "Mercury is the closest planet to the Sun." },
+  { name: "Venus", ko: "금성", fuel: 100, className: "venus", fact: "Venus is very hot and covered with thick clouds." },
+  { name: "Earth", ko: "지구", fuel: 120, className: "earth", fact: "Earth has water, air, animals, and people." },
+  { name: "Mars", ko: "화성", fuel: 150, className: "mars", fact: "Mars is called the Red Planet." },
+  { name: "Jupiter", ko: "목성", fuel: 180, className: "jupiter", fact: "Jupiter is the biggest planet in the Solar System." },
+  { name: "Saturn", ko: "토성", fuel: 190, className: "saturn", fact: "Saturn has beautiful rings made of ice and rock." },
+  { name: "Uranus", ko: "천왕성", fuel: 200, className: "uranus", fact: "Uranus is an ice giant made of ice and gas." },
+  { name: "Neptune", ko: "해왕성", fuel: 220, className: "neptune", fact: "Neptune is very far from the Sun and has strong winds." }
 ];
 
 const obstacles = [
@@ -44,12 +52,10 @@ const obstacles = [
 init();
 
 function init() {
-  planets.forEach(planet => {
-    const btn = document.createElement("button");
-    btn.innerHTML = `${planet.ko}<br>${planet.name}`;
-    btn.addEventListener("click", () => selectPlanet(planet));
-    planetButtons.appendChild(btn);
-  });
+  scoreSpan.textContent = score;
+  updateRocketLevel();
+  makePlanetButtons();
+  makeStickerBook();
 
   plusBtn.addEventListener("click", () => {
     operator = "+";
@@ -62,6 +68,31 @@ function init() {
   });
 
   launchBtn.addEventListener("click", launchRocket);
+}
+
+function makePlanetButtons() {
+  planetButtons.innerHTML = "";
+
+  planets.forEach(planet => {
+    const btn = document.createElement("button");
+    btn.innerHTML = `${planet.ko}<br>${planet.name}`;
+    btn.addEventListener("click", () => selectPlanet(planet));
+    planetButtons.appendChild(btn);
+  });
+}
+
+function makeStickerBook() {
+  stickers.innerHTML = "";
+
+  planets.forEach(planet => {
+    const sticker = document.createElement("div");
+    sticker.className = "sticker";
+    if (visited.includes(planet.name)) sticker.classList.add("done");
+    sticker.innerHTML = visited.includes(planet.name)
+      ? `✅ ${planet.ko}`
+      : `⬜ ${planet.ko}`;
+    stickers.appendChild(sticker);
+  });
 }
 
 function selectPlanet(planet) {
@@ -77,10 +108,12 @@ function selectPlanet(planet) {
 
   fuelGame.classList.remove("hidden");
   spaceQuiz.classList.add("hidden");
+  planetFact.classList.add("hidden");
+  obstacle.style.display = "none";
 
   rocket.classList.remove("launching");
   rocket.style.left = "80px";
-  rocket.style.bottom = "55px";
+  rocket.style.bottom = "52px";
 }
 
 function showPlanet(planet) {
@@ -95,7 +128,7 @@ function makeFuelCards(target) {
   const numbers = [...pair];
 
   while (numbers.length < 5) {
-    const n = randomNumber(20, 160);
+    const n = randomNumber(20, 170);
     if (!numbers.includes(n)) numbers.push(n);
   }
 
@@ -112,14 +145,14 @@ function makeFuelCards(target) {
 }
 
 function makePair(target) {
-  const a = randomNumber(40, target - 30);
+  const a = randomNumber(35, target - 25);
   const b = target - a;
   return [a, b];
 }
 
 function selectNumber(num, card) {
   if (selectedNumbers.length >= 2 && !card.classList.contains("selected")) {
-    message.textContent = "숫자는 2개만 고를 수 있어요. 다시 고르려면 선택된 카드를 눌러주세요.";
+    message.textContent = "숫자는 2개만 고를 수 있어요. 선택된 카드를 다시 누르면 취소돼요.";
     return;
   }
 
@@ -168,18 +201,38 @@ function launchRocket() {
     return;
   }
 
-  message.textContent = "3... 2... 1... 발사!";
   fuelGame.classList.add("hidden");
-  rocket.classList.add("launching");
+  startCountdown();
+}
 
-  setTimeout(() => {
-    startSpaceTravel();
-  }, 3000);
+function startCountdown() {
+  let count = 3;
+  countdown.style.display = "flex";
+  countdown.textContent = count;
+
+  const timer = setInterval(() => {
+    count--;
+
+    if (count > 0) {
+      countdown.textContent = count;
+    } else if (count === 0) {
+      countdown.textContent = "LAUNCH!";
+    } else {
+      clearInterval(timer);
+      countdown.style.display = "none";
+      message.textContent = "🔥 로켓 발사!";
+      rocket.classList.add("launching");
+
+      setTimeout(() => {
+        startSpaceTravel();
+      }, 3000);
+    }
+  }, 700);
 }
 
 function startSpaceTravel() {
   travelStep = 0;
-  message.textContent = "우주 비행 시작! 장애물을 계산으로 피해보세요!";
+  message.textContent = "우주 비행 시작! 계산으로 장애물을 피해보세요!";
   showObstacleQuiz();
 }
 
@@ -244,7 +297,7 @@ function checkQuiz(answer, correct) {
 
     setTimeout(() => {
       showObstacleQuiz();
-    }, 900);
+    }, 800);
   } else {
     message.textContent = "아쉬워요! 다시 계산해보세요.";
   }
@@ -255,14 +308,43 @@ function arrivePlanet() {
   spaceQuiz.classList.add("hidden");
 
   score++;
+  localStorage.setItem("owenStars", score);
   scoreSpan.textContent = score;
+
+  if (!visited.includes(selectedPlanet.name)) {
+    visited.push(selectedPlanet.name);
+    localStorage.setItem("owenVisitedPlanets", JSON.stringify(visited));
+  }
+
+  updateRocketLevel();
+  makeStickerBook();
 
   message.textContent = `착륙 성공! Owen이 ${selectedPlanet.ko}에 도착했어요! ⭐`;
   missionTitle.textContent = `🎉 ${selectedPlanet.ko} 탐사 성공!`;
 
+  factTitle.textContent = `${selectedPlanet.ko} / ${selectedPlanet.name}`;
+  factText.textContent = selectedPlanet.fact;
+  planetFact.classList.remove("hidden");
+
   setTimeout(() => {
     message.textContent = "다른 행성을 선택해서 새로운 우주 미션을 시작하세요!";
   }, 2500);
+}
+
+function updateRocketLevel() {
+  if (score >= 12) {
+    rocketLevel.textContent = "Galaxy";
+    rocketBody.textContent = "🛸";
+  } else if (score >= 7) {
+    rocketLevel.textContent = "Super";
+    rocketBody.textContent = "🚀";
+  } else if (score >= 3) {
+    rocketLevel.textContent = "Power";
+    rocketBody.textContent = "🚀";
+  } else {
+    rocketLevel.textContent = "Basic";
+    rocketBody.textContent = "🚀";
+  }
 }
 
 function randomNumber(min, max) {
