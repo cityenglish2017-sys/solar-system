@@ -34,36 +34,27 @@ let level = Number(localStorage.getItem("owenMathLevel") || 1);
 
 const levelSettings = {
   1: {
-    name: "Step 1",
-    label: "한 자리",
+    name: "Step 1 한 자리",
     fuelMin: 3,
     fuelMax: 9,
     cardMin: 1,
     cardMax: 9,
-    quizMin: 1,
-    quizMax: 9,
     wrongGap: 1
   },
   2: {
-    name: "Step 2",
-    label: "두 자리",
+    name: "Step 2 두 자리",
     fuelMin: 20,
     fuelMax: 99,
     cardMin: 5,
     cardMax: 99,
-    quizMin: 10,
-    quizMax: 99,
     wrongGap: 5
   },
   3: {
-    name: "Step 3",
-    label: "세 자리",
+    name: "Step 3 세 자리",
     fuelMin: 100,
     fuelMax: 220,
     cardMin: 20,
     cardMax: 220,
-    quizMin: 100,
-    quizMax: 220,
     wrongGap: 10
   }
 };
@@ -116,7 +107,7 @@ function setLevel(newLevel) {
   localStorage.setItem("owenMathLevel", level);
 
   const setting = levelSettings[level];
-  levelName.textContent = `${setting.name} ${setting.label}`;
+  levelName.textContent = setting.name;
 
   levelButtons.forEach(btn => {
     btn.classList.toggle("active", Number(btn.dataset.level) === level);
@@ -126,15 +117,16 @@ function setLevel(newLevel) {
   selectedNumbers = [];
 
   missionTitle.textContent = "행성을 선택하세요";
-  message.textContent = `${setting.label} 덧셈·뺄셈 미션입니다. 행성을 선택하세요!`;
+  message.textContent = `${setting.name} 미션입니다. 행성을 선택하세요!`;
 
   fuelGame.classList.add("hidden");
   spaceQuiz.classList.add("hidden");
   planetFact.classList.add("hidden");
   obstacle.style.display = "none";
+
   rocket.classList.remove("launching");
   rocket.style.left = "80px";
-  rocket.style.bottom = "55px";
+  rocket.style.bottom = "52px";
 }
 
 function makePlanetButtons() {
@@ -171,7 +163,7 @@ function selectPlanet(planet) {
 
   rocket.classList.remove("launching");
   rocket.style.left = "80px";
-  rocket.style.bottom = "55px";
+  rocket.style.bottom = "52px";
 }
 
 function makeFuelTarget() {
@@ -224,7 +216,7 @@ function makeCorrectPair(target) {
 
 function selectNumber(num, card) {
   if (selectedNumbers.length >= 2 && !card.classList.contains("selected")) {
-    message.textContent = "숫자는 2개만 고를 수 있어요. 다시 고르려면 선택된 숫자를 눌러요.";
+    message.textContent = "숫자는 2개만 고를 수 있어요. 선택된 숫자를 다시 누르면 취소돼요.";
     return;
   }
 
@@ -333,33 +325,45 @@ function showObstacleQuiz() {
 }
 
 function makeQuiz() {
-  const s = levelSettings[level];
   const usePlus = Math.random() > 0.45;
+  let a, b, correct;
 
-  let a;
-  let b;
-  let correct;
-
-  if (usePlus) {
-    a = randomNumber(s.quizMin, s.quizMax);
-    b = randomNumber(s.cardMin, Math.min(s.cardMax, s.quizMax));
-
-    if (level === 1) {
+  if (level === 1) {
+    if (usePlus) {
       a = randomNumber(1, 8);
       b = randomNumber(1, 9 - a);
+      correct = a + b;
+      return makeQuizObject(`${a} + ${b} = ?`, correct);
+    } else {
+      a = randomNumber(2, 9);
+      b = randomNumber(1, a);
+      correct = a - b;
+      return makeQuizObject(`${a} - ${b} = ?`, correct);
     }
+  }
 
+  if (level === 2) {
+    if (usePlus) {
+      a = randomNumber(10, 60);
+      b = randomNumber(5, 39);
+      correct = a + b;
+      return makeQuizObject(`${a} + ${b} = ?`, correct);
+    } else {
+      a = randomNumber(20, 99);
+      b = randomNumber(5, Math.min(60, a));
+      correct = a - b;
+      return makeQuizObject(`${a} - ${b} = ?`, correct);
+    }
+  }
+
+  if (usePlus) {
+    a = randomNumber(100, 160);
+    b = randomNumber(20, 90);
     correct = a + b;
     return makeQuizObject(`${a} + ${b} = ?`, correct);
   } else {
-    a = randomNumber(s.quizMin, s.quizMax);
-    b = randomNumber(s.cardMin, Math.min(a, s.cardMax));
-
-    if (level === 1) {
-      a = randomNumber(2, 9);
-      b = randomNumber(1, a);
-    }
-
+    a = randomNumber(100, 220);
+    b = randomNumber(20, Math.min(90, a));
     correct = a - b;
     return makeQuizObject(`${a} - ${b} = ?`, correct);
   }
@@ -371,8 +375,7 @@ function makeQuizObject(question, correct) {
   let w1 = correct + gap;
   let w2 = Math.max(0, correct - gap);
 
-  if (w1 === correct) w1 = correct + gap + 1;
-  if (w2 === correct) w2 = correct + gap + 2;
+  if (w1 === w2) w2 = correct + gap + 1;
 
   return {
     question,
