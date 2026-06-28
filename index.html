@@ -10,20 +10,29 @@
 <div id="game">
   <header>
     <h1>🚀 Owen Space Mission</h1>
-    <div id="stats">⭐ <span id="score">0</span> | 🎓 <span id="levelName">Step 1</span></div>
+    <div id="topStats">
+      ⭐ Stars: <span id="score">0</span>
+      &nbsp; | &nbsp;
+      🎓 <span id="levelName">Step 1</span>
+    </div>
   </header>
 
-  <main>
+  <main id="screen">
     <section id="spaceView">
       <div id="starsLayer"></div>
       <div id="sun"></div>
-      <div id="rocket">🚀</div>
+
+      <div id="rocket">
+        <div id="rocketBody">🚀</div>
+        <div id="flame"></div>
+      </div>
+
       <div id="planetDisplay"></div>
       <div id="obstacle"></div>
       <div id="countdown"></div>
     </section>
 
-    <section id="panel">
+    <section id="controlPanel">
       <div id="levelButtons">
         <button data-level="1">Step 1<br>한 자리</button>
         <button data-level="2">Step 2<br>두 자리</button>
@@ -31,29 +40,31 @@
       </div>
 
       <h2 id="missionTitle">행성을 선택하세요</h2>
-      <div id="message">한 자리부터 시작해서 세 자리 덧셈·뺄셈까지 마스터해요!</div>
+      <p id="message">한 자리부터 세 자리까지 덧셈·뺄셈을 마스터해요!</p>
 
       <div id="planetButtons"></div>
 
       <div id="fuelGame" class="box hidden">
-        <div id="fuelTarget"></div>
+        <div id="fuelTarget">필요 연료: 0 L</div>
         <div id="selectedFormula">? + ? = ?</div>
         <div id="numberCards"></div>
-        <div class="twoButtons">
+
+        <div class="opButtons">
           <button id="plusBtn">➕ 더하기</button>
           <button id="minusBtn">➖ 빼기</button>
         </div>
-        <button id="launchBtn">🚀 발사하기</button>
+
+        <button id="launchBtn">🚀 LAUNCH</button>
       </div>
 
       <div id="spaceQuiz" class="box hidden">
         <h3 id="quizTitle">우주 장애물!</h3>
-        <div id="quizQuestion"></div>
+        <div id="quizQuestion">?</div>
         <div id="quizAnswers"></div>
       </div>
 
       <div id="stickerBook" class="box">
-        <h3>🌌 행성 도감</h3>
+        <h3>🌌 Planet Sticker Book</h3>
         <div id="stickers"></div>
       </div>
 
