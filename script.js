@@ -9,7 +9,6 @@ const launchBtn = document.getElementById("launchBtn");
 const plusBtn = document.getElementById("plusBtn");
 const minusBtn = document.getElementById("minusBtn");
 const rocket = document.getElementById("rocket");
-const rocketBody = document.getElementById("rocketBody");
 const planetDisplay = document.getElementById("planetDisplay");
 const obstacle = document.getElementById("obstacle");
 const spaceQuiz = document.getElementById("spaceQuiz");
@@ -17,12 +16,13 @@ const quizTitle = document.getElementById("quizTitle");
 const quizQuestion = document.getElementById("quizQuestion");
 const quizAnswers = document.getElementById("quizAnswers");
 const scoreSpan = document.getElementById("score");
-const rocketLevel = document.getElementById("rocketLevel");
 const countdown = document.getElementById("countdown");
 const stickers = document.getElementById("stickers");
 const planetFact = document.getElementById("planetFact");
 const factTitle = document.getElementById("factTitle");
 const factText = document.getElementById("factText");
+const levelName = document.getElementById("levelName");
+const levelButtons = document.querySelectorAll("#levelButtons button");
 
 let selectedPlanet = null;
 let selectedNumbers = [];
@@ -30,16 +30,53 @@ let operator = "+";
 let score = Number(localStorage.getItem("owenStars") || 0);
 let visited = JSON.parse(localStorage.getItem("owenVisitedPlanets") || "[]");
 let travelStep = 0;
+let level = Number(localStorage.getItem("owenMathLevel") || 1);
+
+const levelSettings = {
+  1: {
+    name: "Step 1",
+    label: "한 자리",
+    fuelMin: 3,
+    fuelMax: 9,
+    cardMin: 1,
+    cardMax: 9,
+    quizMin: 1,
+    quizMax: 9,
+    wrongGap: 1
+  },
+  2: {
+    name: "Step 2",
+    label: "두 자리",
+    fuelMin: 20,
+    fuelMax: 99,
+    cardMin: 5,
+    cardMax: 99,
+    quizMin: 10,
+    quizMax: 99,
+    wrongGap: 5
+  },
+  3: {
+    name: "Step 3",
+    label: "세 자리",
+    fuelMin: 100,
+    fuelMax: 220,
+    cardMin: 20,
+    cardMax: 220,
+    quizMin: 100,
+    quizMax: 220,
+    wrongGap: 10
+  }
+};
 
 const planets = [
-  { name: "Mercury", ko: "수성", fuel: 80, className: "mercury", fact: "Mercury is the closest planet to the Sun." },
-  { name: "Venus", ko: "금성", fuel: 100, className: "venus", fact: "Venus is very hot and covered with thick clouds." },
-  { name: "Earth", ko: "지구", fuel: 120, className: "earth", fact: "Earth has water, air, animals, and people." },
-  { name: "Mars", ko: "화성", fuel: 150, className: "mars", fact: "Mars is called the Red Planet." },
-  { name: "Jupiter", ko: "목성", fuel: 180, className: "jupiter", fact: "Jupiter is the biggest planet in the Solar System." },
-  { name: "Saturn", ko: "토성", fuel: 190, className: "saturn", fact: "Saturn has beautiful rings made of ice and rock." },
-  { name: "Uranus", ko: "천왕성", fuel: 200, className: "uranus", fact: "Uranus is an ice giant made of ice and gas." },
-  { name: "Neptune", ko: "해왕성", fuel: 220, className: "neptune", fact: "Neptune is very far from the Sun and has strong winds." }
+  { name: "Mercury", ko: "수성", className: "mercury", fact: "Mercury is the closest planet to the Sun." },
+  { name: "Venus", ko: "금성", className: "venus", fact: "Venus is very hot and covered with thick clouds." },
+  { name: "Earth", ko: "지구", className: "earth", fact: "Earth has water, air, animals, and people." },
+  { name: "Mars", ko: "화성", className: "mars", fact: "Mars is called the Red Planet." },
+  { name: "Jupiter", ko: "목성", className: "jupiter", fact: "Jupiter is the biggest planet in the Solar System." },
+  { name: "Saturn", ko: "토성", className: "saturn", fact: "Saturn has beautiful rings made of ice and rock." },
+  { name: "Uranus", ko: "천왕성", className: "uranus", fact: "Uranus is an ice giant made of ice and gas." },
+  { name: "Neptune", ko: "해왕성", className: "neptune", fact: "Neptune is very far from the Sun and has strong winds." }
 ];
 
 const obstacles = [
@@ -53,9 +90,13 @@ init();
 
 function init() {
   scoreSpan.textContent = score;
-  updateRocketLevel();
   makePlanetButtons();
   makeStickerBook();
+  setLevel(level);
+
+  levelButtons.forEach(btn => {
+    btn.addEventListener("click", () => setLevel(Number(btn.dataset.level)));
+  });
 
   plusBtn.addEventListener("click", () => {
     operator = "+";
@@ -70,6 +111,32 @@ function init() {
   launchBtn.addEventListener("click", launchRocket);
 }
 
+function setLevel(newLevel) {
+  level = newLevel;
+  localStorage.setItem("owenMathLevel", level);
+
+  const setting = levelSettings[level];
+  levelName.textContent = `${setting.name} ${setting.label}`;
+
+  levelButtons.forEach(btn => {
+    btn.classList.toggle("active", Number(btn.dataset.level) === level);
+  });
+
+  selectedPlanet = null;
+  selectedNumbers = [];
+
+  missionTitle.textContent = "행성을 선택하세요";
+  message.textContent = `${setting.label} 덧셈·뺄셈 미션입니다. 행성을 선택하세요!`;
+
+  fuelGame.classList.add("hidden");
+  spaceQuiz.classList.add("hidden");
+  planetFact.classList.add("hidden");
+  obstacle.style.display = "none";
+  rocket.classList.remove("launching");
+  rocket.style.left = "80px";
+  rocket.style.bottom = "55px";
+}
+
 function makePlanetButtons() {
   planetButtons.innerHTML = "";
 
@@ -81,30 +148,21 @@ function makePlanetButtons() {
   });
 }
 
-function makeStickerBook() {
-  stickers.innerHTML = "";
-
-  planets.forEach(planet => {
-    const sticker = document.createElement("div");
-    sticker.className = "sticker";
-    if (visited.includes(planet.name)) sticker.classList.add("done");
-    sticker.innerHTML = visited.includes(planet.name)
-      ? `✅ ${planet.ko}`
-      : `⬜ ${planet.ko}`;
-    stickers.appendChild(sticker);
-  });
-}
-
 function selectPlanet(planet) {
-  selectedPlanet = planet;
+  selectedPlanet = {
+    ...planet,
+    fuel: makeFuelTarget()
+  };
+
   selectedNumbers = [];
+  operator = "+";
   travelStep = 0;
 
-  missionTitle.textContent = `🚀 목적지: ${planet.ko}`;
-  message.textContent = `${planet.ko}까지 가려면 연료 ${planet.fuel}L가 필요해요. 숫자 2개를 골라 맞춰보세요!`;
+  missionTitle.textContent = `🚀 목적지: ${selectedPlanet.ko}`;
+  message.textContent = `${selectedPlanet.ko}까지 필요한 연료 ${selectedPlanet.fuel}L를 만들어보세요!`;
 
-  showPlanet(planet);
-  makeFuelCards(planet.fuel);
+  showPlanet(selectedPlanet);
+  makeFuelCards(selectedPlanet.fuel);
 
   fuelGame.classList.remove("hidden");
   spaceQuiz.classList.add("hidden");
@@ -113,7 +171,12 @@ function selectPlanet(planet) {
 
   rocket.classList.remove("launching");
   rocket.style.left = "80px";
-  rocket.style.bottom = "52px";
+  rocket.style.bottom = "55px";
+}
+
+function makeFuelTarget() {
+  const s = levelSettings[level];
+  return randomNumber(s.fuelMin, s.fuelMax);
 }
 
 function showPlanet(planet) {
@@ -124,15 +187,15 @@ function showPlanet(planet) {
 function makeFuelCards(target) {
   numberCards.innerHTML = "";
 
-  const pair = makePair(target);
-  const numbers = [...pair];
+  const pair = makeCorrectPair(target);
+  const nums = [...pair];
 
-  while (numbers.length < 5) {
-    const n = randomNumber(20, 170);
-    if (!numbers.includes(n)) numbers.push(n);
+  while (nums.length < 5) {
+    const n = randomNumber(levelSettings[level].cardMin, levelSettings[level].cardMax);
+    if (!nums.includes(n)) nums.push(n);
   }
 
-  shuffle(numbers).forEach(num => {
+  shuffle(nums).forEach(num => {
     const card = document.createElement("button");
     card.className = "numberCard";
     card.textContent = num;
@@ -144,15 +207,24 @@ function makeFuelCards(target) {
   updateFormula();
 }
 
-function makePair(target) {
-  const a = randomNumber(35, target - 25);
-  const b = target - a;
-  return [a, b];
+function makeCorrectPair(target) {
+  if (level === 1) {
+    const a = randomNumber(1, target - 1);
+    return [a, target - a];
+  }
+
+  if (level === 2) {
+    const a = randomNumber(5, target - 5);
+    return [a, target - a];
+  }
+
+  const a = randomNumber(30, target - 30);
+  return [a, target - a];
 }
 
 function selectNumber(num, card) {
   if (selectedNumbers.length >= 2 && !card.classList.contains("selected")) {
-    message.textContent = "숫자는 2개만 고를 수 있어요. 선택된 카드를 다시 누르면 취소돼요.";
+    message.textContent = "숫자는 2개만 고를 수 있어요. 다시 고르려면 선택된 숫자를 눌러요.";
     return;
   }
 
@@ -170,15 +242,15 @@ function selectNumber(num, card) {
 function updateFormula() {
   const a = selectedNumbers[0] ?? "?";
   const b = selectedNumbers[1] ?? "?";
-  let result = "?";
 
+  let result = "?";
   if (selectedNumbers.length === 2) {
     result = operator === "+"
       ? selectedNumbers[0] + selectedNumbers[1]
       : selectedNumbers[0] - selectedNumbers[1];
   }
 
-  selectedFormula.textContent = `선택: ${a} ${operator} ${b} = ${result}`;
+  selectedFormula.textContent = `${a} ${operator} ${b} = ${result}`;
 }
 
 function launchRocket() {
@@ -188,7 +260,7 @@ function launchRocket() {
   }
 
   if (selectedNumbers.length !== 2) {
-    message.textContent = "숫자 카드 2개를 골라주세요!";
+    message.textContent = "숫자 2개를 골라주세요!";
     return;
   }
 
@@ -197,7 +269,7 @@ function launchRocket() {
     : selectedNumbers[0] - selectedNumbers[1];
 
   if (result !== selectedPlanet.fuel) {
-    message.textContent = `연료가 맞지 않아요! ${selectedPlanet.fuel}L를 만들어야 해요.`;
+    message.textContent = `아직 연료가 맞지 않아요. ${selectedPlanet.fuel}L가 필요해요!`;
     return;
   }
 
@@ -220,19 +292,17 @@ function startCountdown() {
     } else {
       clearInterval(timer);
       countdown.style.display = "none";
-      message.textContent = "🔥 로켓 발사!";
       rocket.classList.add("launching");
+      message.textContent = "🔥 로켓 발사 성공!";
 
-      setTimeout(() => {
-        startSpaceTravel();
-      }, 3000);
+      setTimeout(startSpaceTravel, 3000);
     }
   }, 700);
 }
 
 function startSpaceTravel() {
   travelStep = 0;
-  message.textContent = "우주 비행 시작! 계산으로 장애물을 피해보세요!";
+  message.textContent = "우주 장애물을 계산으로 피해보세요!";
   showObstacleQuiz();
 }
 
@@ -243,19 +313,19 @@ function showObstacleQuiz() {
   }
 
   const obs = obstacles[Math.floor(Math.random() * obstacles.length)];
+  const quiz = makeQuiz();
+
   obstacle.textContent = obs.icon;
   obstacle.style.display = "block";
-
-  const quiz = makeQuiz();
 
   quizTitle.textContent = obs.title;
   quizQuestion.textContent = quiz.question;
   quizAnswers.innerHTML = "";
 
-  quiz.answers.forEach(answer => {
+  quiz.answers.forEach(ans => {
     const btn = document.createElement("button");
-    btn.textContent = answer;
-    btn.addEventListener("click", () => checkQuiz(answer, quiz.correct));
+    btn.textContent = ans;
+    btn.addEventListener("click", () => checkQuiz(ans, quiz.correct));
     quizAnswers.appendChild(btn);
   });
 
@@ -263,30 +333,52 @@ function showObstacleQuiz() {
 }
 
 function makeQuiz() {
-  const usePlus = Math.random() > 0.4;
+  const s = levelSettings[level];
+  const usePlus = Math.random() > 0.45;
+
   let a;
   let b;
   let correct;
 
   if (usePlus) {
-    a = randomNumber(20, 90);
-    b = randomNumber(10, 60);
+    a = randomNumber(s.quizMin, s.quizMax);
+    b = randomNumber(s.cardMin, Math.min(s.cardMax, s.quizMax));
+
+    if (level === 1) {
+      a = randomNumber(1, 8);
+      b = randomNumber(1, 9 - a);
+    }
+
     correct = a + b;
-    return {
-      question: `${a} + ${b} = ?`,
-      correct,
-      answers: shuffle([correct, correct + 10, correct - 10])
-    };
+    return makeQuizObject(`${a} + ${b} = ?`, correct);
   } else {
-    a = randomNumber(60, 140);
-    b = randomNumber(10, 50);
+    a = randomNumber(s.quizMin, s.quizMax);
+    b = randomNumber(s.cardMin, Math.min(a, s.cardMax));
+
+    if (level === 1) {
+      a = randomNumber(2, 9);
+      b = randomNumber(1, a);
+    }
+
     correct = a - b;
-    return {
-      question: `${a} - ${b} = ?`,
-      correct,
-      answers: shuffle([correct, correct + 10, correct - 10])
-    };
+    return makeQuizObject(`${a} - ${b} = ?`, correct);
   }
+}
+
+function makeQuizObject(question, correct) {
+  const gap = levelSettings[level].wrongGap;
+
+  let w1 = correct + gap;
+  let w2 = Math.max(0, correct - gap);
+
+  if (w1 === correct) w1 = correct + gap + 1;
+  if (w2 === correct) w2 = correct + gap + 2;
+
+  return {
+    question,
+    correct,
+    answers: shuffle([correct, w1, w2])
+  };
 }
 
 function checkQuiz(answer, correct) {
@@ -295,9 +387,7 @@ function checkQuiz(answer, correct) {
     message.textContent = "정답! 장애물을 피했어요!";
     obstacle.style.display = "none";
 
-    setTimeout(() => {
-      showObstacleQuiz();
-    }, 800);
+    setTimeout(showObstacleQuiz, 800);
   } else {
     message.textContent = "아쉬워요! 다시 계산해보세요.";
   }
@@ -316,41 +406,34 @@ function arrivePlanet() {
     localStorage.setItem("owenVisitedPlanets", JSON.stringify(visited));
   }
 
-  updateRocketLevel();
   makeStickerBook();
 
-  message.textContent = `착륙 성공! Owen이 ${selectedPlanet.ko}에 도착했어요! ⭐`;
-  missionTitle.textContent = `🎉 ${selectedPlanet.ko} 탐사 성공!`;
+  missionTitle.textContent = `🎉 ${selectedPlanet.ko} 도착 성공!`;
+  message.textContent = `Owen이 ${selectedPlanet.ko}에 도착했어요!`;
 
   factTitle.textContent = `${selectedPlanet.ko} / ${selectedPlanet.name}`;
   factText.textContent = selectedPlanet.fact;
   planetFact.classList.remove("hidden");
-
-  setTimeout(() => {
-    message.textContent = "다른 행성을 선택해서 새로운 우주 미션을 시작하세요!";
-  }, 2500);
 }
 
-function updateRocketLevel() {
-  if (score >= 12) {
-    rocketLevel.textContent = "Galaxy";
-    rocketBody.textContent = "🛸";
-  } else if (score >= 7) {
-    rocketLevel.textContent = "Super";
-    rocketBody.textContent = "🚀";
-  } else if (score >= 3) {
-    rocketLevel.textContent = "Power";
-    rocketBody.textContent = "🚀";
-  } else {
-    rocketLevel.textContent = "Basic";
-    rocketBody.textContent = "🚀";
-  }
+function makeStickerBook() {
+  stickers.innerHTML = "";
+
+  planets.forEach(planet => {
+    const sticker = document.createElement("div");
+    sticker.className = "sticker";
+    if (visited.includes(planet.name)) sticker.classList.add("done");
+    sticker.innerHTML = visited.includes(planet.name)
+      ? `✅ ${planet.ko}`
+      : `⬜ ${planet.ko}`;
+    stickers.appendChild(sticker);
+  });
 }
 
 function randomNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function shuffle(array) {
-  return array.sort(() => Math.random() - 0.5);
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
 }
