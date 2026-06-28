@@ -93,7 +93,6 @@ h1 {
   width: 100px;
   height: 120px;
   z-index: 5;
-  transition: 1s;
 }
 
 #rocketBody {
@@ -221,8 +220,28 @@ h1 {
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
   overflow: hidden;
+}
+
+#levelButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+#levelButtons button {
+  height: 50px;
+  border-radius: 15px;
+  border: 3px solid white;
+  font-size: 22px;
+  font-weight: bold;
+  background: #90caf9;
+}
+
+#levelButtons button.active {
+  background: #ffd54f;
+  color: #111;
 }
 
 #missionTitle {
@@ -234,7 +253,7 @@ h1 {
 #message {
   background: white;
   color: #111;
-  min-height: 58px;
+  min-height: 56px;
   border-radius: 16px;
   padding: 10px;
   font-size: 20px;
@@ -248,7 +267,7 @@ h1 {
 }
 
 #planetButtons button {
-  height: 72px;
+  height: 68px;
   font-size: 18px;
   border-radius: 16px;
   border: none;
@@ -263,14 +282,14 @@ h1 {
   background: rgba(0,0,0,0.35);
   border: 3px solid #ffd54f;
   border-radius: 18px;
-  padding: 10px;
+  padding: 9px;
 }
 
 #fuelTarget,
 #selectedFormula {
   font-size: 22px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 
 #numberCards {
@@ -280,7 +299,7 @@ h1 {
 }
 
 .numberCard {
-  height: 62px;
+  height: 58px;
   font-size: 25px;
   border-radius: 15px;
   background: #fff176;
@@ -302,7 +321,7 @@ h1 {
 .opButtons button,
 #launchBtn {
   flex: 1;
-  height: 56px;
+  height: 54px;
   font-size: 22px;
   border-radius: 15px;
   border: none;
